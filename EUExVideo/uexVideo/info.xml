@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uexplugins>
-  <plugin uexName="uexVideo" version="4.0.0" build="9">
-    	<info>9:支持4.0引擎</info>
-    	<build>8:添加播放完成的监听</build>
-      <build>7:修复在非全屏popover网页中使用强制全屏模式异常的问题</build>
+  <plugin uexName="uexVideo" version="4.0.1" build="9">
+        <info>9.1:新增本地视频openPicker接口</info>
+        <build>9:支持4.0引擎</build>
+        <build>8:添加播放完成的监听</build>
+        <build>7:修复在非全屏popover网页中使用强制全屏模式异常的问题</build>
     	<build>6:现在在强制全屏模式下,一定会显示关闭按钮</build>
     	<build>5:优化视频播放和录制，部分接口进行了重做</build>
-      <build>4:改用bundle方式引入资源;支持IDE</build>
-      <build>3:重新编译，支持arm64</build>
-      <build>2:支持arm64</build>
-      <build>1:更换动画效果，修复在6.1.2上的显示问题</build>
-      <build>0:视频功能插件</build>
+        <build>4:改用bundle方式引入资源;支持IDE</build>
+        <build>3:重新编译，支持arm64</build>
+        <build>2:支持arm64</build>
+        <build>1:更换动画效果，修复在6.1.2上的显示问题</build>
+        <build>0:视频功能插件</build>
 	</plugin>
 </uexplugins>

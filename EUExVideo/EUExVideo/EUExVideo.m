@@ -12,7 +12,9 @@
 #import "EUExBaseDefine.h"
 #import "uexVideoRecorder.h"
 #import "uexVideoMediaPlayer.h"
-@interface EUExVideo()
+#import <MobileCoreServices/MobileCoreServices.h>
+
+@interface EUExVideo()<UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 
 @end
 
@@ -114,6 +116,58 @@ CGFloat key = info[UEX_VIDEO_KEY_TO_NSSTRING(key)] ? [info[UEX_VIDEO_KEY_TO_NSST
     //[rVideoObj openVideoRecord:maxDuration qualityType:qualityType compressRatio:compressRatio fileType:fileType];
 }
 
+-(void)videoPicker:(NSMutableArray *)inArguments
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIImagePickerController *pickerVC = [[UIImagePickerController alloc] init];
+        pickerVC.delegate = self;
+        pickerVC.allowsEditing = YES;
+        pickerVC.sourceType =UIImagePickerControllerSourceTypePhotoLibrary;
+        pickerVC.mediaTypes = [NSArray arrayWithObjects:(NSString *)kUTTypeMovie, (NSString *)kUTTypeVideo, nil];
+        
+        [[self.webViewEngine viewController]presentViewController:pickerVC animated:YES completion:nil];
+
+    });
+}
+#pragma mark - 拍摄完成后或者选择相册完成后自动调用的方法 -
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    NSString *moviePath = [[info objectForKey:UIImagePickerControllerMediaURL] path];
+    
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+    
+    NSDictionary *urlDic = [NSDictionary dictionaryWithObjectsAndKeys:moviePath,@"src", nil];
+    NSArray *arry = [NSArray arrayWithObject:urlDic];
+    [dic setObject:arry forKey:@"data"];
+    
+    NSNumber *boolNumber = [NSNumber numberWithBool:NO];
+    [dic setObject:boolNumber forKey:@"isCancelled"];
+    
+    // 模态返回
+    if (picker) {
+        [picker dismissViewControllerAnimated:YES completion:^{
+            [self.webViewEngine callbackWithFunctionKeyPath:@"uexVideo.onVideoPickerClosed" arguments:ACArgsPack(dic)];
+        }];
+    }
+}
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
+    
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+    
+    NSDictionary *urlDic = [NSDictionary dictionaryWithObjectsAndKeys:@"",@"src", nil];
+    NSArray *arry = [NSArray arrayWithObject:urlDic];
+    [dic setObject:arry forKey:@"data"];
+    
+    NSNumber *boolNumber = [NSNumber numberWithBool:YES];
+    [dic setObject:boolNumber forKey:@"isCancelled"];
+    
+    if (picker) {
+        [picker dismissViewControllerAnimated:YES completion:^{
+            [self.webViewEngine callbackWithFunctionKeyPath:@"uexVideo.onVideoPickerClosed" arguments:ACArgsPack(dic)];
+        }];
+    }
+}
 
 
 -(void)clean{
