@@ -7,12 +7,12 @@
 //
 
 #import "EUExVideo.h"
-
+#import <MobileCoreServices/MobileCoreServices.h>
 #import "JSON.h"
 #import "EUExBaseDefine.h"
 #import "uexVideoRecorder.h"
 #import "uexVideoMediaPlayer.h"
-@interface EUExVideo()
+@interface EUExVideo()<UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 
 @end
 
@@ -120,6 +120,59 @@
     
     //[rVideoObj openVideoRecord:maxDuration qualityType:qualityType compressRatio:compressRatio fileType:fileType];
 }
+
+-(void)videoPicker:(NSMutableArray *)inArguments
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIImagePickerController *pickerVC = [[UIImagePickerController alloc] init];
+        pickerVC.delegate = self;
+        pickerVC.allowsEditing = YES;
+        pickerVC.sourceType =UIImagePickerControllerSourceTypePhotoLibrary;
+        pickerVC.mediaTypes = [NSArray arrayWithObjects:(NSString *)kUTTypeMovie, (NSString *)kUTTypeVideo, nil];
+        
+        [EUtility brwView:self.meBrwView presentModalViewController:pickerVC animated:YES];
+    });
+}
+#pragma mark - 拍摄完成后或者选择相册完成后自动调用的方法 -
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    NSString *moviePath = [[info objectForKey:UIImagePickerControllerMediaURL] path];
+    
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+    
+    NSDictionary *urlDic = [NSDictionary dictionaryWithObjectsAndKeys:moviePath,@"src", nil];
+    NSArray *arry = [NSArray arrayWithObject:urlDic];
+    [dic setObject:arry forKey:@"data"];
+    
+    NSNumber *boolNumber = [NSNumber numberWithBool:NO];
+    [dic setObject:boolNumber forKey:@"isCancelled"];
+    
+    // 模态返回
+    if (picker) {
+        [picker dismissViewControllerAnimated:YES completion:^{
+            [self callbackJsonObjectWithName:@"onVideoPickerClosed" object:dic];
+        }];
+    }
+}
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
+    
+    NSMutableDictionary *dic = [[NSMutableDictionary alloc] init];
+    
+    NSDictionary *urlDic = [NSDictionary dictionaryWithObjectsAndKeys:@"",@"src", nil];
+    NSArray *arry = [NSArray arrayWithObject:urlDic];
+    [dic setObject:arry forKey:@"data"];
+    
+    NSNumber *boolNumber = [NSNumber numberWithBool:YES];
+    [dic setObject:boolNumber forKey:@"isCancelled"];
+    
+    if (picker) {
+        [picker dismissViewControllerAnimated:YES completion:^{
+            [self callbackJsonObjectWithName:@"onVideoPickerClosed" object:dic];
+        }];
+    }
+}
+
 -(void)uexVideoWithOpId:(int)inOpId dataType:(int)inDataType data:(NSString *)inData{
 	if (inData) {
         NSString *cbStr=[NSString stringWithFormat:@"if(uexVideo.cbRecord != null){uexVideo.cbRecord(%d,%d,'%@');}",inOpId,inDataType,inData];
@@ -150,6 +203,29 @@
     [EUtility brwView:meBrwView evaluateScript:cbStr];
 }
 
+- (void)callbackJsonObjectWithName:(NSString *)name object:(id)obj{
+    NSString *cbStr = @"";
+    NSString *param = nil;
+    
+    
+    if ([obj isKindOfClass:[NSNumber class]]) {
+        param = [obj stringValue];
+    }
+    
+    if ([obj isKindOfClass:[NSString class]]) {
+        param = [obj JSONFragment];
+    }
+    if ([obj isKindOfClass:[NSArray class]] || [obj isKindOfClass:[NSDictionary class]]) {
+        param = [obj JSONFragment];
+    }
+    if (!param) {
+        param = @"undefined";
+    }
+    
+    cbStr = [NSString stringWithFormat:@"if(uexVideo.%@){uexVideo.%@(%@);}",name,name,param];
+    
+    [EUtility brwView:meBrwView evaluateScript:cbStr];
+}
 
 -(void)clean{
     if (mPlayerObj) {

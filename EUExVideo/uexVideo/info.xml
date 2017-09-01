@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uexplugins>
-  <plugin uexName="uexVideo" version="3.0.9" build="9">
-    <info>9: IDE证书更新</info>
+  <plugin uexName="uexVideo" version="3.0.9.3" build="9">
+    <info>9.3: 新增本地视频openPicker接口Plugin.xml</info>
+    <build>9.1: 新增本地视频openPicker接口</build>
+    <build>9: IDE证书更新</build>
     <build>8: 添加播放完成的监听</build>
     <build>7: 修复在非全屏popover网页中使用强制全屏模式异常的问题</build>
     <build>6: 现在在强制全屏模式下,一定会显示关闭按钮</build>
